@@ -1,6 +1,8 @@
 rblcheck
 ========
 
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/andrewaylett/rblcheck/Rust)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/andrewaylett/rblcheck?sort=semver)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code_of_conduct.md)
 
 Looks up IP addresses and domain names in so-called "DNSRBLs".

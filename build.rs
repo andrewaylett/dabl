@@ -1,7 +1,7 @@
+use dbus_codegen::GenOpts;
 use std::env;
 use std::fs;
 use std::path::Path;
-use dbus_codegen::GenOpts;
 
 const PREFIX: &str = "OrgFreedesktop";
 const COMMAND_LINE: &str = "gdbus introspect --system --dest org.freedesktop.resolve1 --object-path /org/freedesktop/resolve1 --xml";
@@ -19,10 +19,7 @@ fn main() {
         ..Default::default()
     };
     let output = dbus_codegen::generate(resolve, &opts).expect("CodeGen Failed");
-    fs::write(
-        &dest_path,
-        output
-    ).unwrap();
+    fs::write(&dest_path, output).unwrap();
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=resolve1.xml");
 }
