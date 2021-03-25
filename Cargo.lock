@@ -78,6 +78,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "dnscheck"
+version = "0.1.0"
+
+[[package]]
 name = "hermit-abi"
 version = "0.1.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -102,6 +106,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "libdbusdnscheck"
+version = "0.1.0"
+dependencies = [
+ "dbus",
+ "dbus-codegen",
+ "dbus-tree",
+]
+
+[[package]]
+name = "libdnscheck"
+version = "0.1.0"
+
+[[package]]
 name = "pkg-config"
 version = "0.3.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -114,9 +131,9 @@ dependencies = [
  "anyhow",
  "clap",
  "dbus",
- "dbus-codegen",
  "dbus-tree",
  "libc",
+ "libdbusdnscheck",
 ]
 
 [[package]]
