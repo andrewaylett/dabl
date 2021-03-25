@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate clap;
 
-mod resolve;
-
 use anyhow::{Context, Result};
 use clap::{App, Arg, Values};
 use dbus::blocking::Connection;
@@ -10,7 +8,7 @@ use std::net::{IpAddr, Ipv6Addr};
 use std::str::FromStr;
 use std::time::Duration;
 
-use resolve::OrgFreedesktopResolve1Manager;
+use libdbusdnscheck::OrgFreedesktopResolve1Manager;
 
 const BASE_SOURCES: Vec<&str> = vec![];
 

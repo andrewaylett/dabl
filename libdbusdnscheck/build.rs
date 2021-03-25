@@ -10,7 +10,7 @@ fn main() {
     let out_dir = env::var_os("OUT_DIR").unwrap();
     let dest_path = Path::new(&out_dir).join("resolve1.rs");
     // gdbus introspect --system --dest org.freedesktop.resolve1 --object-path /org/freedesktop/resolve1 --xml
-    let resolve = include_str!("resolve1.xml");
+    let resolve = include_str!("src/resolve1.xml");
     let opts = GenOpts {
         methodtype: None,
         crhandler: None,
