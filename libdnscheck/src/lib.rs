@@ -1,10 +1,10 @@
 use dbus::blocking::Connection;
+use dbus::MethodErr;
 use std::net::{IpAddr, Ipv6Addr};
 use std::time::Duration;
 use thiserror::Error;
 
 use libdbusdnscheck::OrgFreedesktopResolve1Manager;
-
 
 #[derive(Debug)]
 pub enum Query {
@@ -12,15 +12,32 @@ pub enum Query {
     Domain(String),
 }
 
-#[derive(Error,Debug)]
+#[derive(Error, Debug)]
 pub enum DNSCheckError {
-    #[error("Problem resolving with DBus: {0}")]
-    DBus (
-        #[from]
-        dbus::Error,
-    ),
+    #[error("DBus reported {0}: {1}")]
+    DBus(String, String),
+    #[error("NXDOMAIN {0}")]
+    NXDomain(String),
     #[error("Something went wrong")]
     Unknown,
+}
+
+impl From<MethodErr> for DNSCheckError {
+    fn from(e: MethodErr) -> Self {
+        if e.errorname()
+            .starts_with("org.freedesktop.resolve1.DnsError.NXDOMAIN")
+        {
+            DNSCheckError::NXDomain(e.description().to_string())
+        } else {
+            DNSCheckError::DBus(e.errorname().to_string(), e.description().to_string())
+        }
+    }
+}
+
+impl From<dbus::Error> for DNSCheckError {
+    fn from(error: dbus::Error) -> Self {
+        DNSCheckError::from(MethodErr::from(error))
+    }
 }
 
 pub fn lookup(source: &str, query: &Query) -> Result<bool, DNSCheckError> {
@@ -42,12 +59,19 @@ pub fn lookup(source: &str, query: &Query) -> Result<bool, DNSCheckError> {
 
     println!("Querying: {}", hostname);
 
-    let result: (Vec<(i32, i32, Vec<u8>)>, String, u64) =
-        proxy.resolve_hostname(0, &hostname, libc::AF_INET, 0)?;
+    let result: Result<(Vec<(i32, i32, Vec<u8>)>, String, u64), DNSCheckError> = proxy
+        .resolve_hostname(0, &hostname, libc::AF_INET, 0)
+        .map_err(From::from);
 
     println!("Result: {:?}", result);
 
-    Ok(!result.0.is_empty())
+    result.map_or_else(
+        |error| match error {
+            DNSCheckError::NXDomain(_) => Ok(false),
+            e => Err(e),
+        },
+        |r| Ok(!r.0.is_empty()),
+    )
 }
 
 fn format_ip(ip: &IpAddr) -> String {
