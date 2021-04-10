@@ -4,7 +4,7 @@ use std::net::{IpAddr, Ipv6Addr};
 use std::time::Duration;
 use thiserror::Error;
 
-use libdbusdnscheck::OrgFreedesktopResolve1Manager;
+use generate_dbus_resolve1::OrgFreedesktopResolve1Manager;
 
 #[derive(Debug)]
 pub enum Query {
