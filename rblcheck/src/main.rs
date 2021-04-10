@@ -40,16 +40,16 @@ fn main_() -> Result<()> {
         .arg(Arg::with_name("query").multiple(true).min_values(1))
         .get_matches_safe()?;
 
-    let base_sources = if let Some(_) = matches.value_of("clear") {
+    let base_sources = if matches.value_of("clear").is_some() {
         vec![]
     } else {
         BASE_SOURCES
     };
 
-    let extra_sources = matches
+    let extra_sources: Vec<&str> = matches
         .values_of("source")
         .map(Values::collect)
-        .unwrap_or(vec![]);
+        .unwrap_or_default();
 
     let params: Vec<&str> = matches
         .values_of("query")
@@ -64,7 +64,7 @@ fn main_() -> Result<()> {
     let queries: Vec<Query> = params
         .iter()
         .map(|&p| match IpAddr::from_str(p) {
-            Ok(ip) => Query::IP(ip),
+            Ok(ip) => Query::Address(ip),
             _ => Query::Domain(p.to_string()),
         })
         .collect();

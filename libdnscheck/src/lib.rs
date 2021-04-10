@@ -8,39 +8,39 @@ use libdbusdnscheck::OrgFreedesktopResolve1Manager;
 
 #[derive(Debug)]
 pub enum Query {
-    IP(IpAddr),
+    Address(IpAddr),
     Domain(String),
 }
 
 #[derive(Error, Debug)]
-pub enum DNSCheckError {
+pub enum DnsCheckError {
     #[error("DBus reported {0}: {1}")]
     DBus(String, String),
     #[error("NXDOMAIN {0}")]
-    NXDomain(String),
+    NxDomain(String),
     #[error("Something went wrong")]
     Unknown,
 }
 
-impl From<MethodErr> for DNSCheckError {
+impl From<MethodErr> for DnsCheckError {
     fn from(e: MethodErr) -> Self {
         if e.errorname()
             .starts_with("org.freedesktop.resolve1.DnsError.NXDOMAIN")
         {
-            DNSCheckError::NXDomain(e.description().to_string())
+            DnsCheckError::NxDomain(e.description().to_string())
         } else {
-            DNSCheckError::DBus(e.errorname().to_string(), e.description().to_string())
+            DnsCheckError::DBus(e.errorname().to_string(), e.description().to_string())
         }
     }
 }
 
-impl From<dbus::Error> for DNSCheckError {
+impl From<dbus::Error> for DnsCheckError {
     fn from(error: dbus::Error) -> Self {
-        DNSCheckError::from(MethodErr::from(error))
+        DnsCheckError::from(MethodErr::from(error))
     }
 }
 
-pub fn lookup(source: &str, query: &Query) -> Result<bool, DNSCheckError> {
+pub fn lookup(source: &str, query: &Query) -> Result<bool, DnsCheckError> {
     println!("Source: {:?}, Query: {:?}", source, query);
 
     let conn = Connection::new_system()?;
@@ -52,14 +52,15 @@ pub fn lookup(source: &str, query: &Query) -> Result<bool, DNSCheckError> {
 
     let queryhost = match query {
         Query::Domain(d) => format!("{}.", d),
-        Query::IP(ip) => format_ip(&ip),
+        Query::Address(ip) => format_ip(&ip),
     };
 
     let hostname = format!("{}{}.", queryhost, source);
 
     println!("Querying: {}", hostname);
 
-    let result: Result<(Vec<(i32, i32, Vec<u8>)>, String, u64), DNSCheckError> = proxy
+    type DBusDnsResponse = (Vec<(i32, i32, Vec<u8>)>, String, u64);
+    let result: Result<DBusDnsResponse, DnsCheckError> = proxy
         .resolve_hostname(0, &hostname, libc::AF_INET, 0)
         .map_err(From::from);
 
@@ -67,7 +68,7 @@ pub fn lookup(source: &str, query: &Query) -> Result<bool, DNSCheckError> {
 
     result.map_or_else(
         |error| match error {
-            DNSCheckError::NXDomain(_) => Ok(false),
+            DnsCheckError::NxDomain(_) => Ok(false),
             e => Err(e),
         },
         |r| Ok(!r.0.is_empty()),
