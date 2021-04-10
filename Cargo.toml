@@ -3,5 +3,5 @@ members = [
     "rblcheck",
     "dnscheck",
     "libdnscheck",
-    "libdbusdnscheck",
+    "generate-dbus-resolve1",
 ]
