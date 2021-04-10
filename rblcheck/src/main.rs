@@ -6,7 +6,7 @@ use clap::{App, Arg, Values};
 use std::net::IpAddr;
 use std::str::FromStr;
 
-use libdnscheck::{lookup,Query};
+use libdnscheck::{lookup, Query};
 
 const BASE_SOURCES: Vec<&str> = vec![];
 
