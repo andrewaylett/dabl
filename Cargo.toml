@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "rblcheck",
-    "dnscheck",
+    "dabl",
     "libdnscheck",
     "generate-dbus-resolve1",
 ]

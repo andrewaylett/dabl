@@ -1,9 +1,14 @@
 [package]
-name = "dnscheck"
+name = "dabl"
 version = "0.1.0"
 authors = ["Andrew Aylett <andrew@aylett.co.uk>"]
 edition = "2018"
+default-run = "dabl"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "~1.0"
+clap = "~2.33"
+
+libdnscheck = { path = "../libdnscheck" }
