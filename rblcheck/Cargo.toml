@@ -5,7 +5,7 @@ authors = ["Andrew Aylett <andrew@aylett.co.uk>"]
 homepage = "https://github.com/andrewaylett/rblcheck"
 readme = "README.md"
 
-version = "0.1.0"
+version = "0.2.0"
 repository = "https://github.com/andrewaylett/rblcheck"
 license = "Apache-2.0"
 
@@ -17,4 +17,4 @@ edition = "2018"
 anyhow = "~1.0"
 clap = "~2.33"
 
-libdnscheck = { path = "../libdnscheck", version = "0.1.0" }
+libdnscheck = { path = "../libdnscheck", version = "0.2.0" }
