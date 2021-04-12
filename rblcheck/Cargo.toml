@@ -17,4 +17,4 @@ edition = "2018"
 anyhow = "~1.0"
 clap = "~2.33"
 
-libdnscheck = { path = "../libdnscheck" }
+libdnscheck = { path = "../libdnscheck", version = "0.1.0" }
