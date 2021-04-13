@@ -1,5 +1,12 @@
 [package]
 name = "libdnscheck"
+description = "Checks DNS allow- and deny-lists"
+homepage = "https://github.com/andrewaylett/dabl"
+readme = "README.md"
+
+repository = "https://github.com/andrewaylett/dabl"
+license = "Apache-2.0"
+
 version = "0.2.0"
 authors = ["Andrew Aylett <andrew@aylett.co.uk>"]
 edition = "2018"

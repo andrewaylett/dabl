@@ -2,11 +2,11 @@
 name = "rblcheck"
 description = "Checks DNS RBLs"
 authors = ["Andrew Aylett <andrew@aylett.co.uk>"]
-homepage = "https://github.com/andrewaylett/rblcheck"
+homepage = "https://github.com/andrewaylett/dabl"
 readme = "README.md"
 
 version = "0.2.0"
-repository = "https://github.com/andrewaylett/rblcheck"
+repository = "https://github.com/andrewaylett/dabl"
 license = "Apache-2.0"
 
 edition = "2018"
