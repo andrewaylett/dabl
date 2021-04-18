@@ -23,7 +23,7 @@ repos:
     rev: '2.3.5'
     hooks:
       - id: editorconfig-checker
-        types:
+        types_or:
           - rust
           - toml
           - yaml

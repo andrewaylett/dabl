@@ -22,6 +22,13 @@ pub enum DnsCheckError {
     Unknown,
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum Output {
+    Quiet,
+    Normal,
+    Verbose,
+}
+
 impl From<MethodErr> for DnsCheckError {
     fn from(e: MethodErr) -> Self {
         if e.errorname()
@@ -40,8 +47,10 @@ impl From<dbus::Error> for DnsCheckError {
     }
 }
 
-pub fn lookup(source: &str, query: &Query) -> Result<bool, DnsCheckError> {
-    println!("Source: {:?}, Query: {:?}", source, query);
+pub fn lookup(source: &str, query: &Query, output: &Output) -> Result<bool, DnsCheckError> {
+    if output == &Output::Verbose {
+        println!("Source: {:?}, Query: {:?}", source, query);
+    }
 
     let conn = Connection::new_system()?;
     let proxy = conn.with_proxy(
@@ -57,14 +66,18 @@ pub fn lookup(source: &str, query: &Query) -> Result<bool, DnsCheckError> {
 
     let hostname = format!("{}{}.", queryhost, source);
 
-    println!("Querying: {}", hostname);
+    if output == &Output::Verbose {
+        println!("Querying: {}", hostname);
+    }
 
     type DBusDnsResponse = (Vec<(i32, i32, Vec<u8>)>, String, u64);
     let result: Result<DBusDnsResponse, DnsCheckError> = proxy
         .resolve_hostname(0, &hostname, libc::AF_INET, 0)
         .map_err(From::from);
 
-    println!("Result: {:?}", result);
+    if output == &Output::Verbose {
+        println!("Result: {:?}", result);
+    }
 
     result.map_or_else(
         |error| match error {

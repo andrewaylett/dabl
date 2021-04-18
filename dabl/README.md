@@ -40,3 +40,21 @@ OPTIONS:
 ARGS:
     <query>...
 ```
+
+TCP Wrappers
+------------
+
+The Author uses `dabl` to restrict access to his IMAP service using TCP Wrappers.
+Regular DNSBLs aren't intended to restrict access to consumer-facing services; you probably don't want to block the "Dial-Up Address List", for example.
+Spamhaus has a subscription list called "AuthBL" which contains IPs observed attempting credential stuffing.
+I have no interest apart from being a very happy user of their free subscription.
+
+Adding this line to `/etc/hosts.allow` and enabling the relevant configuration in your service will let you query the lists of your choice.
+
+```
+imap, imaps: ALL: aclexec /usr/local/bin/dabl -a al.aylett.co.uk -b bl.aylett.co.uk -b YOUR_KEY_HERE.authbl.dq.spamhaus.net %a
+```
+
+Note that the Author's allow and block lists are not general-purpose, and you'll need a key for SpamHaus.
+Copy and paste at your own risk!
+If you want to run your own DNS allow- and block-lists, you may find [rbldnsd](https://rbldnsd.io/) to be useful.

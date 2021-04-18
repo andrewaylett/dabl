@@ -6,7 +6,8 @@ use clap::{App, Arg, Values};
 use std::net::IpAddr;
 use std::str::FromStr;
 
-use libdnscheck::{lookup, Query};
+use libdnscheck::Output::{Normal, Quiet, Verbose};
+use libdnscheck::{lookup, Output, Query};
 
 fn main() {
     let err = main_().unwrap_err();
@@ -21,6 +22,8 @@ const IP_BLOCK: &str = "IP Block";
 const IP_ALLOW: &str = "IP Allow";
 const STANDARD: &str = "Standard";
 const SPAMHAUS_KEY: &str = "SpamHaus key";
+const QUIET: &str = "Quiet";
+const VERBOSE: &str = "Verbose";
 
 fn main_() -> Result<()> {
     let matches = App::new("dabl")
@@ -56,6 +59,16 @@ fn main_() -> Result<()> {
                 .takes_value(true)
                 .help("Your SpamHaus subscription key"),
         )
+        .arg(
+            Arg::with_name(QUIET)
+                .short("q")
+                .help("Only output on error"),
+        )
+        .arg(
+            Arg::with_name(VERBOSE)
+                .short("v")
+                .help("Output more information about what's happening"),
+        )
         .arg(Arg::with_name("query").multiple(true).min_values(1))
         .get_matches_safe()?;
 
@@ -74,10 +87,20 @@ fn main_() -> Result<()> {
         .map(Values::collect)
         .context("Expected at least one query")?;
 
-    println!(
-        "Allow: {:?}, Block: {:?}, Queries: {:?}",
-        allow_sources, block_sources, params
-    );
+    let output = if matches.is_present(QUIET) {
+        Output::Quiet
+    } else if matches.is_present(VERBOSE) {
+        Verbose
+    } else {
+        Normal
+    };
+
+    if output != Quiet {
+        println!(
+            "Allow: {:?}, Block: {:?}, Queries: {:?}",
+            allow_sources, block_sources, params
+        );
+    }
 
     let queries: Vec<Query> = params
         .iter()
@@ -90,17 +113,23 @@ fn main_() -> Result<()> {
     let count_lists = |queries: &Vec<Query>, sources: &Vec<&str>| -> Result<i32> {
         queries
             .iter()
-            .flat_map(|query| sources.iter().map(move |&source| lookup(source, query)))
+            .flat_map(|query| {
+                sources
+                    .iter()
+                    .map(move |&source| lookup(source, query, &output))
+            })
             .fold::<Result<i32>, _>(Ok(0), |r, i| if i? { r.map(|n| n + 1) } else { r })
     };
 
     let allow_count = count_lists(&queries, &allow_sources)?;
     let block_count = count_lists(&queries, &block_sources)?;
 
-    println!(
-        "Hit {} allow lists, {} block lists",
-        allow_count, block_count
-    );
+    if output != Quiet {
+        println!(
+            "Hit {} allow lists, {} block lists",
+            allow_count, block_count
+        );
+    }
 
     if allow_count > 0 {
         std::process::exit(0);

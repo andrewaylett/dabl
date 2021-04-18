@@ -1,14 +1,25 @@
-#[macro_use]
-extern crate clap;
-
 use anyhow::{Context, Result};
-use clap::{App, Arg, Values};
+use clap::{
+    app_from_crate, crate_authors, crate_description, crate_name, crate_version, Arg, Values,
+};
+use lazy_static::lazy_static;
 use std::net::IpAddr;
 use std::str::FromStr;
 
+use libdnscheck::Output::Normal;
 use libdnscheck::{lookup, Query};
 
-const BASE_SOURCES: Vec<&str> = vec![];
+lazy_static! {
+    // These are the defaults from the Debian package
+    static ref BASE_SOURCES: Vec<&'static str> = vec![
+        "sbl.spamhaus.org",
+        "xbl.spamhaus.org",
+        "pbl.spamhaus.org",
+        "bl.spamcop.net",
+        "psbl.surriel.com",
+        "dul.dnsbl.sorbs.net",
+    ];
+}
 
 fn main() {
     let err = main_().unwrap_err();
@@ -18,11 +29,21 @@ fn main() {
     std::process::exit(0)
 }
 
+// From the original rblcheck
+//
+//     -q           Quiet mode; print only listed addresses
+//     -t           Print a TXT record, if any
+//     -m           Stop checking after first address match in any list
+//     -l           List default DNSBL services to check
+//     -c           Clear the current list of DNSBL services
+//     -s <service> Toggle a service to the DNSBL services list
+//     -h, -?       Display this help message
+//     -v           Display version information
+//     <address>    An IP address to look up; specify `-' to read multiple
+//                  addresses from standard input.
+
 fn main_() -> Result<()> {
-    let matches = App::new("rblcheck")
-        .author(crate_authors!())
-        .version(crate_version!())
-        .about("Queries DNS block-lists (or allow lists!)")
+    let matches = app_from_crate!()
         .arg(
             Arg::with_name("clear")
                 .short("c")
@@ -43,7 +64,7 @@ fn main_() -> Result<()> {
     let base_sources = if matches.value_of("clear").is_some() {
         vec![]
     } else {
-        BASE_SOURCES
+        BASE_SOURCES.clone()
     };
 
     let extra_sources: Vec<&str> = matches
@@ -73,7 +94,7 @@ fn main_() -> Result<()> {
         .iter()
         .flat_map(|query| {
             let sources = base_sources.iter().chain(extra_sources.iter());
-            sources.map(move |&source| lookup(source, query))
+            sources.map(move |&source| lookup(source, query, &Normal))
         })
         .fold::<Result<i32>, _>(Ok(0), |r, i| if i? { r.map(|n| n + 1) } else { r })?;
 
