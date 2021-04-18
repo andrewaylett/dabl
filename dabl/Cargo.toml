@@ -7,7 +7,7 @@ readme = "README.md"
 repository = "https://github.com/andrewaylett/dabl"
 license = "Apache-2.0"
 
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Andrew Aylett <andrew@aylett.co.uk>"]
 edition = "2018"
 default-run = "dabl"
@@ -18,4 +18,4 @@ default-run = "dabl"
 anyhow = "~1.0"
 clap = "~2.33"
 
-libdnscheck = { path = "../libdnscheck", version = "0.2.0" }
+libdnscheck = { path = "../libdnscheck", version = "0.3.0" }
