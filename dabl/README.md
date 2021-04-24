@@ -11,7 +11,6 @@ I say "so-called" because there's no real reason why they should be _block_ list
 This project takes significant inspiration (but no code) from https://github.com/logic/rblcheck.
 The biggest benefit over the original is IPv6 support, which is unfortunately lacking from most RBL tooling.
 We also support allow-lists, and if an IP or name is found in one of the allow-lists then we report not blocked.
-There's no short-circuiting, we'll check all the lists for both IPs and Names, and also check all the block-lists even if we found an entry in an allow-list.
 
 There are currently no lists in the "standard" set, and the SpamHaus key doesn't actually do anything: watch this space.
 

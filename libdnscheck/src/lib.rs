@@ -5,11 +5,26 @@ use std::time::Duration;
 use thiserror::Error;
 
 use generate_dbus_resolve1::OrgFreedesktopResolve1Manager;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub enum Query {
     Address(IpAddr),
     Domain(String),
+}
+
+impl Display for Query {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Query::Address(addr) => {
+                write!(f, "{}", addr)
+            }
+            Query::Domain(domain) => {
+                write!(f, "{}", domain)
+            }
+        }
+    }
 }
 
 #[derive(Error, Debug)]
@@ -20,6 +35,12 @@ pub enum DnsCheckError {
     NxDomain(String),
     #[error("Something went wrong")]
     Unknown,
+}
+
+pub struct DnsListMembership {
+    pub name: String,
+    pub list: String,
+    pub found: bool,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -47,7 +68,11 @@ impl From<dbus::Error> for DnsCheckError {
     }
 }
 
-pub fn lookup(source: &str, query: &Query, output: &Output) -> Result<bool, DnsCheckError> {
+pub fn lookup(
+    source: &str,
+    query: &Query,
+    output: &Output,
+) -> Result<DnsListMembership, DnsCheckError> {
     if output == &Output::Verbose {
         println!("Source: {:?}, Query: {:?}", source, query);
     }
@@ -81,10 +106,20 @@ pub fn lookup(source: &str, query: &Query, output: &Output) -> Result<bool, DnsC
 
     result.map_or_else(
         |error| match error {
-            DnsCheckError::NxDomain(_) => Ok(false),
+            DnsCheckError::NxDomain(_) => Ok(DnsListMembership {
+                name: query.to_string(),
+                list: source.to_string(),
+                found: false,
+            }),
             e => Err(e),
         },
-        |r| Ok(!r.0.is_empty()),
+        |r| {
+            Ok(DnsListMembership {
+                name: query.to_string(),
+                list: source.to_string(),
+                found: !r.0.is_empty(),
+            })
+        },
     )
 }
 
@@ -107,4 +142,19 @@ fn format_v6(ip: &Ipv6Addr) -> String {
         .flat_map(|o| vec![o >> 4, o & 0xF])
         .map(|d| format!("{:x}", d))
         .fold("".to_owned(), |a: String, d: String| format!("{}.{}", d, a))
+}
+
+pub fn count_lists(
+    queries: &[Query],
+    sources: &[&str],
+    output: Output,
+) -> Result<Vec<DnsListMembership>, DnsCheckError> {
+    queries
+        .iter()
+        .flat_map(|query| {
+            sources
+                .iter()
+                .map(move |&source| lookup(source, query, &output))
+        })
+        .collect()
 }

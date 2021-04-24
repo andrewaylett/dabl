@@ -7,7 +7,7 @@ use std::net::IpAddr;
 use std::str::FromStr;
 
 use libdnscheck::Output::{Normal, Quiet, Verbose};
-use libdnscheck::{lookup, Output, Query};
+use libdnscheck::{count_lists, Output, Query};
 
 fn main() {
     let err = main_().unwrap_err();
@@ -24,6 +24,7 @@ const STANDARD: &str = "Standard";
 const SPAMHAUS_KEY: &str = "SpamHaus key";
 const QUIET: &str = "Quiet";
 const VERBOSE: &str = "Verbose";
+const QUERY: &str = "Query";
 
 fn main_() -> Result<()> {
     let matches = App::new("dabl")
@@ -69,7 +70,12 @@ fn main_() -> Result<()> {
                 .short("v")
                 .help("Output more information about what's happening"),
         )
-        .arg(Arg::with_name("query").multiple(true).min_values(1))
+        .arg(
+            Arg::with_name(QUERY)
+                .multiple(false)
+                .number_of_values(1)
+                .help("An IP address or domain name to check"),
+        )
         .get_matches_safe()?;
 
     let allow_sources: Vec<&str> = matches
@@ -83,9 +89,9 @@ fn main_() -> Result<()> {
         .unwrap_or_default();
 
     let params: Vec<&str> = matches
-        .values_of("query")
+        .values_of(QUERY)
         .map(Values::collect)
-        .context("Expected at least one query")?;
+        .context("Expected a query")?;
 
     let output = if matches.is_present(QUIET) {
         Output::Quiet
@@ -110,30 +116,46 @@ fn main_() -> Result<()> {
         })
         .collect();
 
-    let count_lists = |queries: &Vec<Query>, sources: &Vec<&str>| -> Result<i32> {
-        queries
-            .iter()
-            .flat_map(|query| {
-                sources
-                    .iter()
-                    .map(move |&source| lookup(source, query, &output))
-            })
-            .fold::<Result<i32>, _>(Ok(0), |r, i| if i? { r.map(|n| n + 1) } else { r })
-    };
+    let allows: Vec<_> = count_lists(&queries, &allow_sources, output)?
+        .into_iter()
+        .filter(|m| m.found)
+        .collect();
 
-    let allow_count = count_lists(&queries, &allow_sources)?;
-    let block_count = count_lists(&queries, &block_sources)?;
-
-    if output != Quiet {
-        println!(
-            "Hit {} allow lists, {} block lists",
-            allow_count, block_count
-        );
+    if !allows.is_empty() {
+        if output != Quiet {
+            println!(
+                "Found in {} allow lists: {}",
+                allows.len(),
+                allows
+                    .into_iter()
+                    .map(|m| m.list)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        }
+        std::process::exit(0)
     }
 
-    if allow_count > 0 {
-        std::process::exit(0);
+    let blocks: Vec<_> = count_lists(&queries, &block_sources, output)?
+        .into_iter()
+        .filter(|m| m.found)
+        .collect();
+
+    if !blocks.is_empty() {
+        let len = blocks.len() as i32;
+        if output != Quiet {
+            println!(
+                "Found in {} block lists: {}",
+                len,
+                blocks
+                    .into_iter()
+                    .map(|m| m.list)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        }
+        std::process::exit(len)
     }
 
-    std::process::exit(block_count);
+    std::process::exit(0);
 }

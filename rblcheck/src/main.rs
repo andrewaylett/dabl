@@ -96,7 +96,7 @@ fn main_() -> Result<()> {
             let sources = base_sources.iter().chain(extra_sources.iter());
             sources.map(move |&source| lookup(source, query, &Normal))
         })
-        .fold::<Result<i32>, _>(Ok(0), |r, i| if i? { r.map(|n| n + 1) } else { r })?;
+        .fold::<Result<i32>, _>(Ok(0), |r, i| if i?.found { r.map(|n| n + 1) } else { r })?;
 
     println!("Hit {} lists", result);
 
