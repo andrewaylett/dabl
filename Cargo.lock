@@ -56,7 +56,7 @@ dependencies = [
 
 [[package]]
 name = "dabl"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "libdnscheck",
@@ -155,7 +155,7 @@ dependencies = [
 
 [[package]]
 name = "libdnscheck"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "dbus",
@@ -216,7 +216,7 @@ dependencies = [
 
 [[package]]
 name = "rblcheck"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "lazy_static",
