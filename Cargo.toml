@@ -2,6 +2,4 @@
 members = [
     "rblcheck",
     "dabl",
-    "libdnscheck",
-    "generate-dbus-resolve1",
 ]

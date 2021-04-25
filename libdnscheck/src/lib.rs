@@ -1,13 +1,15 @@
-use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::net::{IpAddr, Ipv6Addr};
-use std::time::Duration;
+use std::{fmt, io};
 
-use dbus::blocking::Connection;
-use dbus::MethodErr;
+use dns_lookup::{getaddrinfo, LookupErrorKind};
 use thiserror::Error;
 
-use generate_dbus_resolve1::OrgFreedesktopResolve1Manager;
+use crate::dbus::lookup_dbus;
+use crate::DnsCheckError::{NoDBus, NoResolved};
+
+#[cfg(all(feature = "dbus", target_os = "linux"))]
+mod dbus;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Query<'a> {
@@ -32,10 +34,20 @@ impl Display for Query<'_> {
 pub enum DnsCheckError {
     #[error("DBus reported {0}: {1}")]
     DBus(String, String),
+    #[error("DBus support is missing")]
+    NoDBus,
+    #[error("systemd-resolved not found: {0}")]
+    NoResolved(#[source] anyhow::Error),
     #[error("NXDOMAIN {0}")]
     NxDomain(String),
-    #[error("Something went wrong")]
-    Unknown,
+    #[error("Something went wrong: {0}")]
+    Unknown(#[from] anyhow::Error),
+}
+
+impl From<io::Error> for DnsCheckError {
+    fn from(e: io::Error) -> Self {
+        DnsCheckError::Unknown(e.into())
+    }
 }
 
 pub struct DnsListMembership {
@@ -51,40 +63,34 @@ pub enum Output {
     Verbose,
 }
 
-impl From<MethodErr> for DnsCheckError {
-    fn from(e: MethodErr) -> Self {
-        if e.errorname()
-            .starts_with("org.freedesktop.resolve1.DnsError.NXDOMAIN")
-        {
-            DnsCheckError::NxDomain(e.description().to_string())
-        } else {
-            DnsCheckError::DBus(e.errorname().to_string(), e.description().to_string())
-        }
-    }
-}
-
-impl From<dbus::Error> for DnsCheckError {
-    fn from(error: dbus::Error) -> Self {
-        DnsCheckError::from(MethodErr::from(error))
-    }
-}
-
 pub fn lookup(
     source: &str,
     query: &Query,
     output: &Output,
 ) -> Result<DnsListMembership, DnsCheckError> {
-    if output == &Output::Verbose {
-        println!("Source: {:?}, Query: {:?}", source, query);
-    }
+    match lookup_dbus(source, query, output) {
+        Ok(r) => return Ok(r),
+        Err(NoDBus) => {
+            if output == &Output::Verbose {
+                eprintln!("DBus not compiled in, falling back to internal resolution")
+            }
+        }
+        Err(NoResolved(e)) => {
+            if output == &Output::Verbose {
+                eprintln!("DBus resolution failed: {:?}", e)
+            }
+        }
+        Err(e) => return Err(e),
+    };
 
-    let conn = Connection::new_system()?;
-    let proxy = conn.with_proxy(
-        "org.freedesktop.resolve1",
-        "/org/freedesktop/resolve1",
-        Duration::from_secs(30),
-    );
+    lookup_dns(source, query, output)
+}
 
+fn lookup_dns(
+    source: &str,
+    query: &Query,
+    _output: &Output,
+) -> Result<DnsListMembership, DnsCheckError> {
     let queryhost = match query {
         Query::Domain(d) => format!("{}.", d),
         Query::Address(ip) => format_ip(&ip),
@@ -92,36 +98,35 @@ pub fn lookup(
 
     let hostname = format!("{}{}.", queryhost, source);
 
-    if output == &Output::Verbose {
-        println!("Querying: {}", hostname);
-    }
-
-    type DBusDnsResponse = (Vec<(i32, i32, Vec<u8>)>, String, u64);
-    let result: Result<DBusDnsResponse, DnsCheckError> = proxy
-        .resolve_hostname(0, &hostname, libc::AF_INET, 0)
-        .map_err(From::from);
-
-    if output == &Output::Verbose {
-        println!("Result: {:?}", result);
-    }
-
-    result.map_or_else(
-        |error| match error {
-            DnsCheckError::NxDomain(_) => Ok(DnsListMembership {
-                name: format!("{}", query),
-                list: source.to_string(),
-                found: false,
-            }),
-            e => Err(e),
+    let mut addrinfo = match getaddrinfo(Some(&hostname), None, None) {
+        Ok(a) => Ok(a),
+        Err(e) => match e.kind() {
+            LookupErrorKind::NoName => {
+                return Ok(DnsListMembership {
+                    name: query.to_string(),
+                    list: format!("{:?}", source),
+                    found: false,
+                })
+            }
+            _ => Err(DnsCheckError::Unknown(io::Error::from(e).into())),
         },
-        |r| {
-            Ok(DnsListMembership {
-                name: format!("{}", query),
-                list: source.to_string(),
-                found: !r.0.is_empty(),
-            })
-        },
-    )
+    }?;
+
+    Ok(DnsListMembership {
+        name: source.to_string(),
+        list: format!("{}", query),
+        found: addrinfo.next().is_some(),
+    })
+}
+
+#[cfg(not(all(feature = "dbus", target_os = "linux")))]
+mod dbus {
+    use crate::DnsCheckError::NoDBus;
+    use crate::{DnsCheckError, DnsListMembership, Output, Query};
+
+    pub fn lookup_dbus(_: &str, _: &Query, _: &Output) -> Result<DnsListMembership, DnsCheckError> {
+        Err(NoDBus)
+    }
 }
 
 fn format_ip(ip: &IpAddr) -> String {
