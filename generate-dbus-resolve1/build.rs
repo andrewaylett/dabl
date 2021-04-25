@@ -1,7 +1,8 @@
-use dbus_codegen::GenOpts;
 use std::env;
 use std::fs;
 use std::path::Path;
+
+use dbus_codegen::GenOpts;
 
 const PREFIX: &str = "OrgFreedesktop";
 const COMMAND_LINE: &str = "gdbus introspect --system --dest org.freedesktop.resolve1 --object-path /org/freedesktop/resolve1 --xml";

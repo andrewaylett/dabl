@@ -12,32 +12,27 @@ This project takes significant inspiration (but no code) from https://github.com
 The biggest benefit over the original is IPv6 support, which is unfortunately lacking from most RBL tooling.
 We also support allow-lists, and if an IP or name is found in one of the allow-lists then we report not blocked.
 
-There are currently no lists in the "standard" set, and the SpamHaus key doesn't actually do anything: watch this space.
-
 Usage
 -----
 
 ```
 $ dabl --help
-dabl 0.1.0
-Andrew Aylett <andrew@aylett.co.uk>
-Queries DNS Allow- or Block-Lists
-
+dabl 0.4.0
 USAGE:
-    dabl [FLAGS] [OPTIONS] [--] [query]...
+    dabl [FLAGS] [OPTIONS] <query>
 
 FLAGS:
-        --standard    Use the built-in 'standard' set of lists
-    -h, --help        Prints help information
-    -V, --version     Prints version information
+    -h, --help       Prints help information
+    -q, --quiet      Only output errors
+    -V, --version    Prints version information
+    -v, --verbose    Output debugging information
 
 OPTIONS:
-    -a, --allow <IP Allow>...            Specify an allow list to use
-    -b, --block <IP Block>...            Specify a block list to use
-        --spamhaus-key <SpamHaus key>    Your SpamHaus subscription key
+    -a, --allow <allow>...    A DNS allow list
+    -b, --block <block>...    A DNS block list
 
 ARGS:
-    <query>...
+    <query>    An IP address (v4 or v6) or domain name
 ```
 
 TCP Wrappers

@@ -1,10 +1,12 @@
-use anyhow::{Context, Result};
-use clap::{
-    app_from_crate, crate_authors, crate_description, crate_name, crate_version, Arg, Values,
-};
-use lazy_static::lazy_static;
+use std::io;
+use std::io::Write;
 use std::net::IpAddr;
+use std::ops::Deref;
 use std::str::FromStr;
+
+use anyhow::Result;
+use lazy_static::lazy_static;
+use structopt::StructOpt;
 
 use libdnscheck::Output::Normal;
 use libdnscheck::{lookup, Query};
@@ -23,7 +25,12 @@ lazy_static! {
 
 fn main() {
     let err = main_().unwrap_err();
-    eprintln!("Error: {:?}", err);
+    if let Some(err) = err.downcast_ref::<structopt::clap::Error>() {
+        let out = io::stdout();
+        writeln!(&mut out.lock(), "{}", err.message).expect("Error writing Error to stdout");
+    } else {
+        eprintln!("Error: {:?}", err);
+    }
     // We exit with a "success" on error, as the error code is the count of the number of lists hit
     // so `0` is the fail-safe
     std::process::exit(0)
@@ -41,41 +48,43 @@ fn main() {
 //     -v           Display version information
 //     <address>    An IP address to look up; specify `-' to read multiple
 //                  addresses from standard input.
+#[derive(Debug, StructOpt)]
+#[structopt()]
+struct Arguments {
+    #[structopt(short, help = "Quiet mode; print only listed addresses")]
+    quiet: bool,
+    #[structopt(short, help = "Print a TXT record, if any")]
+    text: bool,
+    #[structopt(short, help = "Stop checking after first address match in any list")]
+    match_one: bool,
+    #[structopt(short, help = "List default DNSBL services to check")]
+    list: bool,
+    #[structopt(short, help = "Clear the current list of DNSBL services")]
+    clear: bool,
+    #[structopt(
+        short,
+        number_of_values = 1,
+        help = "Toggle a service to the DNSBL services list"
+    )]
+    services: Vec<String>,
+    #[structopt(
+        help = "An IP address to look up; specify `-' to read multiple addresses from standard input"
+    )]
+    addresses: Vec<String>,
+}
 
 fn main_() -> Result<()> {
-    let matches = app_from_crate!()
-        .arg(
-            Arg::with_name("clear")
-                .short("c")
-                .requires("source")
-                .help("Clear the built-in list"),
-        )
-        .arg(
-            Arg::with_name("source")
-                .short("s")
-                .takes_value(true)
-                .number_of_values(1)
-                .multiple(true)
-                .help("Specify a list to use"),
-        )
-        .arg(Arg::with_name("query").multiple(true).min_values(1))
-        .get_matches_safe()?;
+    let args: Arguments = Arguments::from_args_safe()?;
 
-    let base_sources = if matches.value_of("clear").is_some() {
+    let base_sources = if args.clear {
         vec![]
     } else {
         BASE_SOURCES.clone()
     };
 
-    let extra_sources: Vec<&str> = matches
-        .values_of("source")
-        .map(Values::collect)
-        .unwrap_or_default();
+    let extra_sources: Vec<&str> = args.services.iter().map(Deref::deref).collect();
 
-    let params: Vec<&str> = matches
-        .values_of("query")
-        .map(Values::collect)
-        .context("Expected at least one query")?;
+    let params: Vec<&str> = args.addresses.iter().map(Deref::deref).collect();
 
     println!(
         "Base: {:?}, Extra: {:?}, Queries: {:?}",
@@ -86,7 +95,7 @@ fn main_() -> Result<()> {
         .iter()
         .map(|&p| match IpAddr::from_str(p) {
             Ok(ip) => Query::Address(ip),
-            _ => Query::Domain(p.to_string()),
+            _ => Query::Domain(p),
         })
         .collect();
 

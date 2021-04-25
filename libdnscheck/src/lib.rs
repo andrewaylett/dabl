@@ -1,20 +1,21 @@
-use dbus::blocking::Connection;
-use dbus::MethodErr;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::net::{IpAddr, Ipv6Addr};
 use std::time::Duration;
+
+use dbus::blocking::Connection;
+use dbus::MethodErr;
 use thiserror::Error;
 
 use generate_dbus_resolve1::OrgFreedesktopResolve1Manager;
-use std::fmt;
-use std::fmt::{Display, Formatter};
 
-#[derive(Debug)]
-pub enum Query {
+#[derive(Debug, Copy, Clone)]
+pub enum Query<'a> {
     Address(IpAddr),
-    Domain(String),
+    Domain(&'a str),
 }
 
-impl Display for Query {
+impl Display for Query<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Query::Address(addr) => {
@@ -107,7 +108,7 @@ pub fn lookup(
     result.map_or_else(
         |error| match error {
             DnsCheckError::NxDomain(_) => Ok(DnsListMembership {
-                name: query.to_string(),
+                name: format!("{}", query),
                 list: source.to_string(),
                 found: false,
             }),
@@ -115,7 +116,7 @@ pub fn lookup(
         },
         |r| {
             Ok(DnsListMembership {
-                name: query.to_string(),
+                name: format!("{}", query),
                 list: source.to_string(),
                 found: !r.0.is_empty(),
             })
