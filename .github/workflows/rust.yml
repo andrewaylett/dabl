@@ -2,23 +2,66 @@ name: Rust
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
-
-env:
-  CARGO_TERM_COLOR: always
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+          - 1.61.0
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Dependencies
-      run: sudo apt install libdbus-1-dev
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+      - uses: actions/checkout@v3
+
+      - uses: actions-rs/toolchain@v1
+        id: toolchain
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+          components: rustfmt, clippy
+
+      - uses: actions/cache@v3
+        id: cache-registry
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('~/.cargo/registry/index/**') }}-${{ hashFiles('~/.cargo/registry/cache/**') }}-${{ hashFiles('~/.cargo/git/db/**') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+
+      - uses: actions/cache@v3
+        id: cache-toolchain-dependent
+        with:
+          path: |
+            ~/.cargo/bin/
+            target/
+          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --locked --all-targets
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
