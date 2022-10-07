@@ -1,5 +1,4 @@
-rblcheck
-========
+# rblcheck
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/andrewaylett/dabl/Rust)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](../code_of_conduct.md)
@@ -13,8 +12,7 @@ The biggest benefit over the original is IPv6 support, which is unfortunately la
 
 There are currently no lists in the "standard" set.
 
-Usage
------
+## Usage
 
 If you don't need the traditional CLI, you may prefer to use `dabl`.
 

@@ -1,5 +1,4 @@
-dabl
-========
+# dabl
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/andrewaylett/rblcheck/Rust)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code_of_conduct.md)
@@ -15,8 +14,7 @@ There's no short-circuiting, we'll check all the lists for both IPs and Names, a
 
 There are currently no lists in the "standard" set, and the SpamHaus key doesn't actually do anything: watch this space.
 
-Usage
------
+## Usage
 
 ```
 $ dabl --help
