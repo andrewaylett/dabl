@@ -1,5 +1,4 @@
-libdnscheck
-========
+# libdnscheck
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/andrewaylett/dabl/Rust)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](../code_of_conduct.md)

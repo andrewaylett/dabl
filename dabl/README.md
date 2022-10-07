@@ -1,5 +1,4 @@
-dabl
-========
+# dabl
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/andrewaylett/dabl/Rust)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](../code_of_conduct.md)
@@ -12,8 +11,7 @@ This project takes significant inspiration (but no code) from https://github.com
 The biggest benefit over the original is IPv6 support, which is unfortunately lacking from most RBL tooling.
 We also support allow-lists, and if an IP or name is found in one of the allow-lists then we report not blocked.
 
-Usage
------
+## Usage
 
 ```
 $ dabl --help
@@ -35,8 +33,7 @@ ARGS:
     <query>    An IP address (v4 or v6) or domain name
 ```
 
-TCP Wrappers
-------------
+## TCP Wrappers
 
 The Author uses `dabl` to restrict access to his IMAP service using TCP Wrappers.
 Regular DNSBLs aren't intended to restrict access to consumer-facing services; you probably don't want to block the "Dial-Up Address List", for example.
