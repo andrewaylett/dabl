@@ -24,4 +24,3 @@ features = ["wrap_help"]
 
 [features]
 resolved = ["libdnscheck/resolved"]
-default = ["resolved"]

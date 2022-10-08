@@ -18,6 +18,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Dependencies
+        run: sudo apt install libdbus-1-dev
+
       - uses: actions-rs/toolchain@v1
         id: toolchain
         with:
