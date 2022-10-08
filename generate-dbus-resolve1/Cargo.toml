@@ -13,9 +13,9 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
+[target.'cfg(target_os = "linux")'.dependencies]
 dbus = "0.9.1"
 dbus-tree = "0.9.0"
 
-[build-dependencies]
+[target.'cfg(target_os = "linux")'.build-dependencies]
 dbus-codegen = "0.9.1"

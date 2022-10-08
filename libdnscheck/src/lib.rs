@@ -93,7 +93,7 @@ fn lookup_dns(
 ) -> Result<DnsListMembership, DnsCheckError> {
     let queryhost = match query {
         Query::Domain(d) => format!("{}.", d),
-        Query::Address(ip) => format_ip(&ip),
+        Query::Address(ip) => format_ip(ip),
     };
 
     let hostname = format!("{}{}.", queryhost, source);
