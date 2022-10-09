@@ -21,4 +21,4 @@ jobs:
 
       - name: Dependencies
         run: sudo apt install libdbus-1-dev
-      - uses: pre-commit/action@v2.0.3
+      - uses: pre-commit/action@v3.0.0
