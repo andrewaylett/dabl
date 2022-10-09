@@ -18,7 +18,7 @@ repos:
     hooks:
       - id: fmt
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: "2.3.5"
+    rev: "2.6.1"
     hooks:
       - id: editorconfig-checker
         exclude: "(.github|.idea)/.*"
