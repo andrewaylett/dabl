@@ -27,7 +27,7 @@ jobs:
         with:
           path: |
             ~/.cache/pre-commit/
-          key: ${{ runner.os }}-pre-commit-${{ hashFiles('~/.cache/pre-commit/**') }}
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('~/.pre-commit-config.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pre-commit-
 
@@ -35,10 +35,6 @@ jobs:
 
   check:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        rust:
-          - stable
     permissions:
       contents: read
       security-events: write
@@ -54,7 +50,7 @@ jobs:
         id: toolchain
         with:
           profile: minimal
-          toolchain: ${{ matrix.rust }}
+          toolchain: stable
           override: true
           components: rustfmt, clippy
 
@@ -65,8 +61,9 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('~/.cargo/registry/index/**') }}-${{ hashFiles('~/.cargo/registry/cache/**') }}-${{ hashFiles('~/.cargo/git/db/**') }}
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-check
           restore-keys: |
+            ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-registry-
 
       - uses: actions/cache@v3
@@ -75,8 +72,9 @@ jobs:
           path: |
             ~/.cargo/bin/
             target/
-          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-check
           restore-keys: |
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
             ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-
 
       - name: Install required cargo
@@ -89,7 +87,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload analysis results to GitHub
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: rust-clippy-results.sarif
           wait-for-processing: true
@@ -123,7 +121,6 @@ jobs:
           profile: minimal
           toolchain: ${{ matrix.rust }}
           override: true
-          components: rustfmt, clippy
 
       - uses: actions/cache@v3
         id: cache-registry
@@ -132,8 +129,10 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('~/.cargo/registry/index/**') }}-${{ hashFiles('~/.cargo/registry/cache/**') }}-${{ hashFiles('~/.cargo/git/db/**') }}
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-build
           restore-keys: |
+            ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-check
+            ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-registry-
 
       - uses: actions/cache@v3
@@ -142,8 +141,10 @@ jobs:
           path: |
             ~/.cargo/bin/
             target/
-          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-build
           restore-keys: |
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-check
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-
 
       - name: Build
@@ -152,7 +153,7 @@ jobs:
           --all-targets
 
       - name: Test
-        run: cargo test
+        run: cargo test --locked
 
   publish:
     runs-on: ubuntu-latest
@@ -180,8 +181,10 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('~/.cargo/registry/index/**') }}-${{ hashFiles('~/.cargo/registry/cache/**') }}-${{ hashFiles('~/.cargo/git/db/**') }}
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-publish
           restore-keys: |
+            ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-build
+            ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-registry-
 
       - uses: actions/cache@v3
@@ -190,8 +193,10 @@ jobs:
           path: |
             ~/.cargo/bin/
             target/
-          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-publish
           restore-keys: |
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-build
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-
 
       - uses: katyo/publish-crates@v2
