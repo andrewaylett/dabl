@@ -21,7 +21,7 @@ mod implementation {
             ..Default::default()
         };
         let output = dbus_codegen::generate(resolve, &opts).expect("CodeGen Failed");
-        fs::write(&dest_path, output).unwrap();
+        fs::write(dest_path, output).unwrap();
         println!("cargo:rerun-if-changed=build.rs");
         println!("cargo:rerun-if-changed=resolve1.xml");
     }

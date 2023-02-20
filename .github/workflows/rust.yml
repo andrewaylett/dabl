@@ -5,8 +5,104 @@ on:
   pull_request:
 
 jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+
+      - uses: actions-rs/toolchain@v1
+        id: toolchain
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Dependencies
+        run: sudo apt install libdbus-1-dev
+
+      - uses: actions/cache@v3
+        id: cache-pre-commit
+        with:
+          path: |
+            ~/.cache/pre-commit/
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('~/.cache/pre-commit/**') }}
+          restore-keys: |
+            ${{ runner.os }}-pre-commit-
+
+      - uses: pre-commit/action@v3.0.0
+
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Dependencies
+        run: sudo apt install libdbus-1-dev
+
+      - uses: actions-rs/toolchain@v1
+        id: toolchain
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+          components: rustfmt, clippy
+
+      - uses: actions/cache@v3
+        id: cache-registry
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('~/.cargo/registry/index/**') }}-${{ hashFiles('~/.cargo/registry/cache/**') }}-${{ hashFiles('~/.cargo/git/db/**') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+
+      - uses: actions/cache@v3
+        id: cache-toolchain-dependent
+        with:
+          path: |
+            ~/.cargo/bin/
+            target/
+          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-
+
+      - name: Install required cargo
+        run: cargo install clippy-sarif sarif-fmt
+
+      - name: Run rust-clippy
+        run: cargo clippy
+          --all-features
+          --message-format=json | clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt
+        continue-on-error: true
+
+      - name: Upload analysis results to GitHub
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: rust-clippy-results.sarif
+          wait-for-processing: true
+
+      - name: Check Cargo fmt
+        run: cargo fmt
+          --all
+          --check
+
   build:
     runs-on: ubuntu-latest
+    needs:
+      - check
     strategy:
       matrix:
         rust:
@@ -50,31 +146,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-
 
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --locked --all-targets
+      - name: Build
+        run: cargo build
+          --locked
+          --all-targets
 
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
+      - name: Test
+        run: cargo test
 
   publish:
     runs-on: ubuntu-latest
     needs:
       - build
+      - pre-commit
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v3
+
+      - name: Dependencies
+        run: sudo apt install libdbus-1-dev
 
       - uses: actions-rs/toolchain@v1
         id: toolchain
