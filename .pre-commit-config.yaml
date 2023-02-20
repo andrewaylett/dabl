@@ -1,6 +1,10 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v4.3.0"
     hooks:
@@ -17,6 +21,7 @@ repos:
     rev: "v1.0"
     hooks:
       - id: fmt
+      - id: clippy
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
     rev: "2.6.1"
     hooks:
@@ -26,3 +31,11 @@ repos:
     rev: v3.0.0-alpha.4
     hooks:
       - id: prettier
+  - repo: local
+    hooks:
+      - id: cargo-version-update
+        name: Check Cargo Versions
+        language: system
+        entry: cargo update -w
+        pass_filenames: false
+        files: "Cargo\\.(lock|toml)"

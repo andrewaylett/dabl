@@ -3,9 +3,12 @@ use std::net::{IpAddr, Ipv6Addr};
 use std::{fmt, io};
 
 use dns_lookup::{getaddrinfo, LookupErrorKind};
+use log::*;
 use thiserror::Error;
 
+#[cfg(dbus)]
 use crate::dbus::lookup_dbus;
+#[cfg(dbus)]
 use crate::DnsCheckError::{NoDBus, NoResolved};
 
 #[cfg(all(feature = "dbus", target_os = "linux"))]
@@ -56,41 +59,23 @@ pub struct DnsListMembership {
     pub found: bool,
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum Output {
-    Quiet,
-    Normal,
-    Verbose,
-}
-
-pub fn lookup(
-    source: &str,
-    query: &Query,
-    output: &Output,
-) -> Result<DnsListMembership, DnsCheckError> {
-    match lookup_dbus(source, query, output) {
+pub fn lookup(source: &str, query: &Query) -> Result<DnsListMembership, DnsCheckError> {
+    #[cfg(dbus)]
+    match lookup_dbus(source, query) {
         Ok(r) => return Ok(r),
         Err(NoDBus) => {
-            if output == &Output::Verbose {
-                eprintln!("DBus not compiled in, falling back to internal resolution")
-            }
+            warn!("DBus not compiled in, falling back to internal resolution")
         }
         Err(NoResolved(e)) => {
-            if output == &Output::Verbose {
-                eprintln!("DBus resolution failed: {:?}", e)
-            }
+            warn!("DBus resolution failed: {:?}", e)
         }
         Err(e) => return Err(e),
     };
 
-    lookup_dns(source, query, output)
+    lookup_dns(source, query)
 }
 
-fn lookup_dns(
-    source: &str,
-    query: &Query,
-    _output: &Output,
-) -> Result<DnsListMembership, DnsCheckError> {
+fn lookup_dns(source: &str, query: &Query) -> Result<DnsListMembership, DnsCheckError> {
     let queryhost = match query {
         Query::Domain(d) => format!("{}.", d),
         Query::Address(ip) => format_ip(ip),
@@ -119,16 +104,6 @@ fn lookup_dns(
     })
 }
 
-#[cfg(not(all(feature = "dbus", target_os = "linux")))]
-mod dbus {
-    use crate::DnsCheckError::NoDBus;
-    use crate::{DnsCheckError, DnsListMembership, Output, Query};
-
-    pub fn lookup_dbus(_: &str, _: &Query, _: &Output) -> Result<DnsListMembership, DnsCheckError> {
-        Err(NoDBus)
-    }
-}
-
 fn format_ip(ip: &IpAddr) -> String {
     match ip {
         IpAddr::V4(v4) => format!(
@@ -153,14 +128,9 @@ fn format_v6(ip: &Ipv6Addr) -> String {
 pub fn count_lists(
     queries: &[Query],
     sources: &[&str],
-    output: Output,
 ) -> Result<Vec<DnsListMembership>, DnsCheckError> {
     queries
         .iter()
-        .flat_map(|query| {
-            sources
-                .iter()
-                .map(move |&source| lookup(source, query, &output))
-        })
+        .flat_map(|query| sources.iter().map(move |&source| lookup(source, query)))
         .collect()
 }

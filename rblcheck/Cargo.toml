@@ -5,7 +5,7 @@ authors = ["Andrew Aylett <andrew@aylett.co.uk>"]
 homepage = "https://github.com/andrewaylett/dabl"
 readme = "README.md"
 
-version = "0.4.0"
+version = "0.5.0"
 repository = "https://github.com/andrewaylett/dabl"
 license = "Apache-2.0"
 
@@ -16,10 +16,12 @@ edition = "2018"
 [dependencies]
 anyhow = "~1.0"
 lazy_static = "1.4.0"
+log = "0.4.17"
+stderrlog = "0.5.3"
 
 [dependencies.libdnscheck]
 path = "../libdnscheck"
-version = "0.4.0"
+version = "0.5.0"
 
 [dependencies.structopt]
 version = "~0.3"

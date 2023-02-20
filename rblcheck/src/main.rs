@@ -6,9 +6,9 @@ use std::str::FromStr;
 
 use anyhow::Result;
 use lazy_static::lazy_static;
+use log::*;
 use structopt::StructOpt;
 
-use libdnscheck::Output::Normal;
 use libdnscheck::{lookup, Query};
 
 lazy_static! {
@@ -53,10 +53,13 @@ fn main() {
 struct Arguments {
     #[structopt(short, help = "Quiet mode; print only listed addresses")]
     quiet: bool,
+    #[allow(unused)]
     #[structopt(short, help = "Print a TXT record, if any")]
     text: bool,
+    #[allow(unused)]
     #[structopt(short, help = "Stop checking after first address match in any list")]
     match_one: bool,
+    #[allow(unused)]
     #[structopt(short, help = "List default DNSBL services to check")]
     list: bool,
     #[structopt(short, help = "Clear the current list of DNSBL services")]
@@ -76,6 +79,12 @@ struct Arguments {
 fn main_() -> Result<()> {
     let args: Arguments = Arguments::from_args_safe()?;
 
+    stderrlog::new()
+        .module(module_path!())
+        .quiet(args.quiet)
+        .init()
+        .unwrap();
+
     let base_sources = if args.clear {
         vec![]
     } else {
@@ -86,7 +95,7 @@ fn main_() -> Result<()> {
 
     let params: Vec<&str> = args.addresses.iter().map(Deref::deref).collect();
 
-    println!(
+    info!(
         "Base: {:?}, Extra: {:?}, Queries: {:?}",
         base_sources, extra_sources, params
     );
@@ -103,11 +112,11 @@ fn main_() -> Result<()> {
         .iter()
         .flat_map(|query| {
             let sources = base_sources.iter().chain(extra_sources.iter());
-            sources.map(move |&source| lookup(source, query, &Normal))
+            sources.map(move |&source| lookup(source, query))
         })
         .fold::<Result<i32>, _>(Ok(0), |r, i| if i?.found { r.map(|n| n + 1) } else { r })?;
 
-    println!("Hit {} lists", result);
+    error!("Hit {} lists", result);
 
     std::process::exit(result);
 }

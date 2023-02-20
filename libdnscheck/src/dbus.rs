@@ -4,6 +4,7 @@ use dbus::{Error as DBusError, MethodErr};
 use generate_dbus_resolve1::OrgFreedesktopResolve1Manager;
 
 use crate::{format_ip, DnsCheckError, DnsListMembership, Output, Query};
+use log::*;
 use std::time::Duration;
 
 impl From<MethodErr> for DnsCheckError {
@@ -29,9 +30,7 @@ pub fn lookup_dbus(
     query: &Query,
     output: &Output,
 ) -> Result<DnsListMembership, DnsCheckError> {
-    if output == &Output::Verbose {
-        println!("Source: {:?}, Query: {:?}", source, query);
-    }
+    info!("Source: {:?}, Query: {:?}", source, query);
 
     let conn = Connection::new_system().map_err(|e| DnsCheckError::NoResolved(e.into()))?;
     let proxy = conn.with_proxy(
@@ -47,18 +46,14 @@ pub fn lookup_dbus(
 
     let hostname = format!("{}{}.", queryhost, source);
 
-    if output == &Output::Verbose {
-        println!("Querying: {}", hostname);
-    }
+    debug!("Querying: {}", hostname);
 
     type DBusDnsResponse = (Vec<(i32, i32, Vec<u8>)>, String, u64);
     let result: Result<DBusDnsResponse, DnsCheckError> = proxy
         .resolve_hostname(0, &hostname, libc::AF_INET, 0)
         .map_err(From::from);
 
-    if output == &Output::Verbose {
-        println!("Result: {:?}", result);
-    }
+    debug!("Result: {:?}", result);
 
     result.map_or_else(
         |error| match error {
