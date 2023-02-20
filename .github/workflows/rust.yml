@@ -27,7 +27,7 @@ jobs:
         with:
           path: |
             ~/.cache/pre-commit/
-          key: ${{ runner.os }}-pre-commit-${{ hashFiles('~/.pre-commit-config.yaml') }}
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pre-commit-
 
@@ -78,7 +78,7 @@ jobs:
             ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-
 
       - name: Install required cargo
-        run: cargo install clippy-sarif sarif-fmt
+        run: cargo install --force clippy-sarif sarif-fmt
 
       - name: Run rust-clippy
         run: cargo clippy
