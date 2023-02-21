@@ -17,7 +17,7 @@ edition = "2018"
 anyhow = "~1.0"
 lazy_static = "1.4.0"
 log = "0.4.17"
-stderrlog = "0.5.3"
+stderrlog = "0.5.4"
 
 [dependencies.libdnscheck]
 path = "../libdnscheck"
