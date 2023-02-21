@@ -43,6 +43,7 @@ jobs:
         run: sudo apt install libdbus-1-dev
 
       - uses: dtolnay/rust-toolchain@stable
+        id: toolchain
         with:
           components: rustfmt, clippy
 
@@ -64,10 +65,10 @@ jobs:
           path: |
             ~/.cargo/bin/
             target/
-          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-check
+          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}-check
           restore-keys: |
-            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
-            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-
 
       - name: Install required cargo
         run: cargo install --force clippy-sarif sarif-fmt
@@ -108,6 +109,7 @@ jobs:
         run: sudo apt install libdbus-1-dev
 
       - uses: dtolnay/rust-toolchain@master
+        id: toolchain
         with:
           toolchain: ${{ matrix.rust }}
 
@@ -130,11 +132,11 @@ jobs:
           path: |
             ~/.cargo/bin/
             target/
-          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-build
+          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}-build
           restore-keys: |
-            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-check
-            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-
-            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}-check
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}-
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-
 
       - name: Build
         run: cargo build
@@ -156,12 +158,8 @@ jobs:
       - name: Dependencies
         run: sudo apt install libdbus-1-dev
 
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         id: toolchain
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
 
       - uses: actions/cache@v3
         id: cache-registry
@@ -182,11 +180,11 @@ jobs:
           path: |
             ~/.cargo/bin/
             target/
-          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-publish
+          key: ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}-publish
           restore-keys: |
-            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-build
-            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}-
-            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.rustc_hash }}-
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}-build
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}-
+            ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-
 
       - uses: katyo/publish-crates@v2
         with:
