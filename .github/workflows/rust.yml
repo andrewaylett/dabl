@@ -71,7 +71,10 @@ jobs:
             ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-
 
       - name: Install required cargo
-        run: cargo install --force clippy-sarif sarif-fmt
+        run: cargo install clippy-sarif sarif-fmt
+        # This would fail if we already have the programs installed with no updates available
+        # If we do need to install them, we'll find out that we failed in the next step
+        continue-on-error: true
 
       - name: Run rust-clippy
         run: cargo clippy
