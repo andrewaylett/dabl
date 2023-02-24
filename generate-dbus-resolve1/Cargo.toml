@@ -7,7 +7,7 @@ readme = "README.md"
 repository = "https://github.com/andrewaylett/dabl"
 license = "Apache-2.0"
 
-version = "1.0.0"
+version = "1.1.0"
 authors = ["Andrew Aylett <andrew@aylett.co.uk>"]
 edition = "2018"
 

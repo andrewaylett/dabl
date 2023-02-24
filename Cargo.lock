@@ -159,7 +159,7 @@ dependencies = [
 
 [[package]]
 name = "dabl"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "anyhow",
  "libdnscheck",
@@ -212,7 +212,7 @@ dependencies = [
 
 [[package]]
 name = "generate-dbus-resolve1"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "dbus",
  "dbus-codegen",
@@ -293,7 +293,7 @@ dependencies = [
 
 [[package]]
 name = "libdnscheck"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "anyhow",
  "dbus",
@@ -398,7 +398,7 @@ dependencies = [
 
 [[package]]
 name = "rblcheck"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "anyhow",
  "lazy_static",
