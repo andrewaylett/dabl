@@ -3,7 +3,7 @@ use dbus::{Error as DBusError, MethodErr};
 
 use generate_dbus_resolve1::OrgFreedesktopResolve1Manager;
 
-use crate::{format_ip, DnsCheckError, DnsListMembership, Output, Query};
+use crate::{format_ip, DnsCheckError, DnsListMembership, Query};
 use log::*;
 use std::time::Duration;
 

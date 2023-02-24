@@ -181,12 +181,11 @@ dependencies = [
 
 [[package]]
 name = "dbus-codegen"
-version = "0.9.1"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a49da9fdfbe872d4841d56605dc42efa5e6ca3291299b87f44e1cde91a28617c"
+checksum = "a76dc35ce83e4e9fa089b4fabe66c757b27bd504dc2179c97a01b36d3e874fb0"
 dependencies = [
  "clap",
- "dbus",
  "xml-rs",
 ]
 

@@ -1,4 +1,3 @@
-#[cfg(target_os = "linux")]
 mod implementation {
     use dbus_codegen::GenOpts;
     use std::env;
@@ -15,7 +14,6 @@ mod implementation {
         let resolve = include_str!("src/resolve1.xml");
         let opts = GenOpts {
             methodtype: None,
-            crhandler: None,
             skipprefix: Some(PREFIX.to_owned()),
             command_line: COMMAND_LINE.to_owned(),
             ..Default::default()
@@ -28,6 +26,5 @@ mod implementation {
 }
 
 pub fn main() {
-    #[cfg(target_os = "linux")]
     implementation::main()
 }
