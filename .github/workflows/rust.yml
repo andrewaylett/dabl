@@ -18,15 +18,6 @@ jobs:
       - name: Dependencies
         run: sudo apt install libdbus-1-dev
 
-      - uses: actions/cache@v3
-        id: cache-pre-commit
-        with:
-          path: |
-            ~/.cache/pre-commit/
-          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pre-commit-
-
       - uses: pre-commit/action@v3.0.0
 
   check:
