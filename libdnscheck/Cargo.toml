@@ -19,7 +19,7 @@ resolved = ["dbus", "dbus-tree", "generate-dbus-resolve1"]
 [dependencies]
 anyhow = "~1.0.71"
 thiserror = "~1.0.40"
-libc = "0.2.142"
+libc = "0.2.143"
 log = "0.4.17"
 dns-lookup = "1.0.8"
 
