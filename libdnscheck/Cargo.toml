@@ -21,7 +21,7 @@ anyhow = "~1.0.71"
 thiserror = "~1.0.40"
 libc = "0.2.143"
 log = "0.4.17"
-dns-lookup = "1.0.8"
+dns-lookup = "2.0.2"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 dbus = { version = "0.9.7", optional = true }
