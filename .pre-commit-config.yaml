@@ -23,7 +23,7 @@ repos:
       - id: fmt
       - id: clippy
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: "2.7.1"
+    rev: "2.7.2"
     hooks:
       - id: editorconfig-checker
         exclude: "(.github|.idea)/.*"
