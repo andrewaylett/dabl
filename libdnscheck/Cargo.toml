@@ -17,7 +17,7 @@ edition = "2018"
 resolved = ["dbus", "dbus-tree", "generate-dbus-resolve1"]
 
 [dependencies]
-anyhow = "~1.0.71"
+anyhow = "~1.0.72"
 thiserror = "~1.0.43"
 libc = "0.2.147"
 log = "0.4.19"
