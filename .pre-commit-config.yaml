@@ -39,3 +39,7 @@ repos:
         entry: cargo update -w
         pass_filenames: false
         files: "Cargo\\.(lock|toml)"
+
+ci:
+  skip:
+    - clippy
