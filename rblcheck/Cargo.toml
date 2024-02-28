@@ -16,7 +16,7 @@ edition = "2018"
 [dependencies]
 anyhow = "~1.0.72"
 lazy_static = "1.4.0"
-log = "0.4.19"
+log = "0.4.21"
 stderrlog = "0.5.4"
 
 [dependencies.libdnscheck]
