@@ -6,9 +6,9 @@ use dns_lookup::{getaddrinfo, LookupErrorKind};
 use log::*;
 use thiserror::Error;
 
-#[cfg(dbus)]
+#[cfg(feature = "dbus")]
 use crate::dbus::lookup_dbus;
-#[cfg(dbus)]
+#[cfg(feature = "dbus")]
 use crate::DnsCheckError::{NoDBus, NoResolved};
 
 #[cfg(all(feature = "dbus", target_os = "linux"))]
@@ -60,7 +60,7 @@ pub struct DnsListMembership {
 }
 
 pub fn lookup(source: &str, query: &Query) -> Result<DnsListMembership, DnsCheckError> {
-    #[cfg(dbus)]
+    #[cfg(feature = "dbus")]
     match lookup_dbus(source, query) {
         Ok(r) => return Ok(r),
         Err(NoDBus) => {

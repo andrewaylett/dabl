@@ -9,7 +9,7 @@ use lazy_static::lazy_static;
 use log::*;
 use structopt::StructOpt;
 
-use libdnscheck::{lookup, Query};
+use libdnscheck::{lookup, DnsCheckError, Query};
 
 lazy_static! {
     // These are the defaults from the Debian package
@@ -114,7 +114,9 @@ fn main_() -> Result<()> {
             let sources = base_sources.iter().chain(extra_sources.iter());
             sources.map(move |&source| lookup(source, query))
         })
-        .fold::<Result<i32>, _>(Ok(0), |r, i| if i?.found { r.map(|n| n + 1) } else { r })?;
+        .try_fold(0, |r, i| {
+            Ok::<_, DnsCheckError>(if i?.found { r + 1 } else { r })
+        })?;
 
     error!("Hit {} lists", result);
 
