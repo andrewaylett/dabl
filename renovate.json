@@ -1,7 +1,7 @@
 {
   "extends": [
-    "config:base",
-    "github>andrewaylett/renovate-config",
+    "config:recommended",
+    "github>andrewaylett/renovate-config#v2",
     ":assignAndReview(andrewaylett)"
   ]
 }
