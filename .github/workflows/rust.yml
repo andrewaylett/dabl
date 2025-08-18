@@ -12,8 +12,8 @@ jobs:
         if: ${{ env.ACT }}
         run: sudo apt update && sudo apt install -y apt-utils pip
 
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+      - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
         with:
           cache: pip
 
@@ -24,7 +24,7 @@ jobs:
       - name: Dependencies
         run: sudo apt install -y libdbus-1-dev
 
-      - uses: pre-commit/action@v3.0.0
+      - uses: pre-commit/action@646c83fcd040023954eafda54b4db0192ce70507 # v3.0.0
 
   check:
     runs-on: ubuntu-latest
@@ -34,7 +34,7 @@ jobs:
       actions: read
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       - name: Dependencies
         if: ${{ env.ACT }}
@@ -48,7 +48,7 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
         id: cache-registry
         with:
           path: |
@@ -60,7 +60,7 @@ jobs:
             ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-registry-
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
         id: cache-toolchain-dependent
         with:
           path: |
@@ -85,7 +85,7 @@ jobs:
 
       - name: Upload analysis results to GitHub
         if: ${{ ! env.ACT }}
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@b8d3b6e8af63cde30bdc382c0bc28114f4346c88 # v2
         with:
           sarif_file: rust-clippy-results.sarif
           wait-for-processing: true
@@ -108,7 +108,7 @@ jobs:
           - 1.63.0
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       - name: Dependencies
         if: ${{ env.ACT }}
@@ -122,7 +122,7 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
         id: cache-registry
         with:
           path: |
@@ -135,7 +135,7 @@ jobs:
             ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-registry-
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
         id: cache-toolchain-dependent
         with:
           path: |
@@ -162,7 +162,7 @@ jobs:
       - pre-commit
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       - name: Dependencies
         if: ${{ env.ACT }}
@@ -174,7 +174,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         id: toolchain
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
         id: cache-registry
         with:
           path: |
@@ -187,7 +187,7 @@ jobs:
             ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-registry-
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
         id: cache-toolchain-dependent
         with:
           path: |
@@ -199,7 +199,7 @@ jobs:
             ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-${{ steps.toolchain.outputs.cachekey }}-
 
-      - uses: katyo/publish-crates@v2
+      - uses: katyo/publish-crates@02cc2f1ad653fb25c7d1ff9eb590a8a50d06186b # v2
         with:
           registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
           ignore-unpublished-changes: true
