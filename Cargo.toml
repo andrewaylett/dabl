@@ -3,3 +3,4 @@ members = [
     "rblcheck",
     "dabl",
 ]
+resolver = "2"
