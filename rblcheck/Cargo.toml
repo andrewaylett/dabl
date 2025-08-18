@@ -9,7 +9,7 @@ version = "0.5.1"
 repository = "https://github.com/andrewaylett/dabl"
 license = "Apache-2.0"
 
-edition = "2018"
+edition = "2021"
 
 rust-version = "1.63.0"
 
