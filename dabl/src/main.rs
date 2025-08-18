@@ -18,6 +18,7 @@ fn main() {
     } else {
         eprintln!("Error: {:?}", err);
     }
+
     // We exit with a "success" on error, as the error code is the count of the number of lists hit
     // so `0` is the fail-safe
     std::process::exit(0)

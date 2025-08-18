@@ -28,8 +28,8 @@ repos:
   hooks:
   - id: cargo-version-update
     name: Check Cargo Versions
-    language: system
-    entry: cargo update -w
+    language: docker_image
+    entry: docker.io/rust:1.89.0 cargo update -w
     pass_filenames: false
     files: "Cargo\\.(lock|toml)"
 - repo: https://github.com/andrewaylett/pre-commit-hooks
@@ -38,6 +38,7 @@ repos:
   - id: init-hooks
   - id: cargo-fmt
   - id: cargo-clippy
+  - id: cog
 
 - repo: https://github.com/google/yamlfmt
   rev: v0.17.2

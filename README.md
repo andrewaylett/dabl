@@ -16,46 +16,81 @@ There are currently no lists in the "standard" set, and the SpamHaus key doesn't
 
 ## Usage
 
+<!-- [[[cog
+result = sp.run(
+    ["cargo", "run", "--bin", "dabl", "--", "--help"],
+    capture_output=True,
+    text=True,
+    check=True
+)
+cog.outl(f"""
 ```
 $ dabl --help
-dabl 0.1.0
-Andrew Aylett <andrew@aylett.co.uk>
-Queries DNS Allow- or Block-Lists
+{result.stdout.strip()}
+```
+""")
+]]] -->
+
+```
+$ dabl --help
+dabl 0.5.1
 
 USAGE:
-    dabl [FLAGS] [OPTIONS] [--] [query]...
+    dabl [FLAGS] [OPTIONS] <query>
 
 FLAGS:
-        --standard    Use the built-in 'standard' set of lists
-    -h, --help        Prints help information
-    -V, --version     Prints version information
+    -h, --help       Prints help information
+    -q, --quiet      Silence all output
+    -V, --version    Prints version information
+    -v, --verbose    Output more details
 
 OPTIONS:
-    -a, --allow <IP Allow>...            Specify an allow list to use
-    -b, --block <IP Block>...            Specify a block list to use
-        --spamhaus-key <SpamHaus key>    Your SpamHaus subscription key
+    -a, --allow <allow>...    A DNS allow list
+    -b, --block <block>...    A DNS block list
+    -t, --timestamp <ts>      Timestamp (sec, ms, ns, none)
 
 ARGS:
-    <query>...
+    <query>    An IP address (v4 or v6) or domain name
 ```
+
+<!-- [[[end]]] -->
+
+<!-- [[[cog
+result = sp.run(
+    ["cargo", "run", "--bin", "rblcheck", "--", "--help"],
+    capture_output=True,
+    text=True,
+    check=True
+)
+cog.outl(f"""
+```
+$ rblcheck --help
+{result.stdout.strip()}
+```
+""")
+]]] -->
 
 ```
 $ rblcheck --help
-rblcheck 0.1.0
-Andrew Aylett <andrew@aylett.co.uk>
-Queries DNS block-lists (or allow lists!)
+rblcheck 0.5.1
 
 USAGE:
-    rblcheck [FLAGS] [OPTIONS] [--] [query]...
+    rblcheck [FLAGS] [OPTIONS] [--] [addresses]...
 
 FLAGS:
-    -c               Clear the built-in list
+    -c               Clear the current list of DNSBL services
     -h, --help       Prints help information
+    -l               List default DNSBL services to check
+    -m               Stop checking after first address match in any list
+    -q               Quiet mode; print only listed addresses
+    -t               Print a TXT record, if any
     -V, --version    Prints version information
 
 OPTIONS:
-    -s <source>...        Specify a list to use
+    -s <services>...        Toggle a service to the DNSBL services list
 
 ARGS:
-    <query>...
+    <addresses>...    An IP address to look up; specify `-' to read multiple addresses from standard input
 ```
+
+<!-- [[[end]]] -->
