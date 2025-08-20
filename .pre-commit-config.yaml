@@ -13,11 +13,6 @@ repos:
   - id: mixed-line-ending
   - id: check-xml
   - id: forbid-submodules
-- repo: https://github.com/doublify/pre-commit-rust
-  rev: "v1.0"
-  hooks:
-  - id: fmt
-  - id: clippy
 - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
   rev: "2.7.3"
   hooks:
@@ -38,9 +33,11 @@ repos:
     pass_filenames: false
     files: "Cargo\\.(lock|toml)"
 - repo: https://github.com/andrewaylett/pre-commit-hooks
-  rev: v0.6.3
+  rev: v0.7.0
   hooks:
   - id: init-hooks
+  - id: cargo-fmt
+  - id: cargo-clippy
 
 - repo: https://github.com/google/yamlfmt
   rev: v0.17.2
@@ -63,4 +60,4 @@ repos:
     - --strict
 ci:
   skip:
-  - clippy
+  - cargo-clippy
