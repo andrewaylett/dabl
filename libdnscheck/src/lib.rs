@@ -6,14 +6,6 @@ use dns_lookup::{getaddrinfo, LookupErrorKind};
 use log::*;
 use thiserror::Error;
 
-#[cfg(feature = "dbus")]
-use crate::dbus::lookup_dbus;
-#[cfg(feature = "dbus")]
-use crate::DnsCheckError::{NoDBus, NoResolved};
-
-#[cfg(all(feature = "dbus", target_os = "linux"))]
-mod dbus;
-
 #[derive(Debug, Copy, Clone)]
 pub enum Query<'a> {
     Address(IpAddr),
@@ -60,22 +52,6 @@ pub struct DnsListMembership {
 }
 
 pub fn lookup(source: &str, query: &Query) -> Result<DnsListMembership, DnsCheckError> {
-    #[cfg(feature = "dbus")]
-    match lookup_dbus(source, query) {
-        Ok(r) => return Ok(r),
-        Err(NoDBus) => {
-            warn!("DBus not compiled in, falling back to internal resolution")
-        }
-        Err(NoResolved(e)) => {
-            warn!("DBus resolution failed: {:?}", e)
-        }
-        Err(e) => return Err(e),
-    };
-
-    lookup_dns(source, query)
-}
-
-fn lookup_dns(source: &str, query: &Query) -> Result<DnsListMembership, DnsCheckError> {
     let queryhost = match query {
         Query::Domain(d) => format!("{}.", d),
         Query::Address(ip) => format_ip(ip),
