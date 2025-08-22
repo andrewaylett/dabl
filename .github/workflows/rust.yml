@@ -2,27 +2,19 @@ name: Rust
 
 on:
   push:
+    branches:
+    - main
+    - renovate/*
   pull_request:
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-    - name: Dependencies
-      if: ${{ env.ACT }}
-      run: sudo apt update && sudo apt install -y apt-utils pip
-
     - uses: actions/checkout@v5
-    - uses: actions/setup-python@v5
-      with:
-        cache: pip
-
     - uses: dtolnay/rust-toolchain@stable
       with:
         components: rustfmt, clippy
-
-    - name: Dependencies
-      run: sudo apt install -y libdbus-1-dev
 
     - uses: andrewaylett/pre-commit-action@v4.3.0-5
 
@@ -35,14 +27,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
-
-    - name: Dependencies
-      if: ${{ env.ACT }}
-      run: sudo apt update
-
-    - name: Dependencies
-      run: sudo apt install -y libdbus-1-dev
-
     - uses: dtolnay/rust-toolchain@stable
       id: toolchain
       with:
@@ -105,14 +89,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
-
-    - name: Dependencies
-      if: ${{ env.ACT }}
-      run: sudo apt update
-
-    - name: Dependencies
-      run: sudo apt install -y libdbus-1-dev
-
     - uses: dtolnay/rust-toolchain@master
       id: toolchain
       with:
@@ -157,14 +133,6 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
     - uses: actions/checkout@v5
-
-    - name: Dependencies
-      if: ${{ env.ACT }}
-      run: sudo apt update
-
-    - name: Dependencies
-      run: sudo apt install -y libdbus-1-dev
-
     - uses: dtolnay/rust-toolchain@stable
       id: toolchain
 
