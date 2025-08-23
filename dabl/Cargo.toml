@@ -19,7 +19,7 @@ rust-version = "1.63.0"
 [dependencies]
 anyhow = "1.0"
 log = "0.4.19"
-stderrlog = "0.5.4"
+stderrlog = "0.6.0"
 libdnscheck = { path = "../libdnscheck", version = "0.5.1" }
 
 [dependencies.structopt]
